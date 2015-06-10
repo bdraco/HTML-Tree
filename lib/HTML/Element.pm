@@ -2917,20 +2917,22 @@ sub is_inside {
     return 0 unless @_; # if no items specified, I guess this is right.
 
     my $current = $self;
-
     # the loop starts by looking at the given element
-    while ( defined $current and ref $current ) {
-        for (@_) {
-            if (ref) {    # element
-                return 1 if $_ eq $current;
-            }
-            else {        # tag name
-                return 1 if $_ eq $current->{'_tag'};
-            }
+
+    if (scalar @_ == 1) {
+        while ( defined $current and ref $current ) {
+            return 1 if $current eq $_[0] || $current->{'_tag'} eq $_[0];
+            $current = $current->{'_parent'};
         }
-        $current = $current->{'_parent'};
+        return 0;
+    } else {
+        my %elements = map { $_ => 1 } @_;
+        while ( defined $current and ref $current ) {
+            return 1 if $elements{$current} || $elements{ $current->{'_tag'} };
+            $current = $current->{'_parent'};
+        }
     }
-    0;
+    return 0;
 }
 
 =method-second is_empty
